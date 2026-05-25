@@ -9,10 +9,11 @@ import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, UserCircle2 } from 'lucide-react'
 import { signUp } from '@/lib/supabase'
 import { useUserStore } from '@/store/userStore'
 import { Button } from '@/components/ui/Button'
+import { SpartanHelmet } from '@/components/ui/SpartanHelmet'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -26,11 +27,27 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
+function getSignupErrorMessage(error: unknown): string {
+  if (!error) return 'Account creation failed. Please try again.'
+  const msg = error instanceof Error ? error.message : String(error)
+  if (msg.includes('already registered') || msg.includes('already exists')) {
+    return 'An account with this email already exists. Try signing in.'
+  }
+  if (msg.includes('password') && msg.includes('weak')) {
+    return 'Password is too weak. Use a mix of letters and numbers.'
+  }
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Connection error. Check your internet and try again.'
+  }
+  return 'Account creation failed. Please try again.'
+}
+
 export default function SignupPage() {
   const router = useRouter()
-  const { setUserId, setOnboardingData } = useUserStore()
+  const { setUserId, setIsGuest, setOnboardingData } = useUserStore()
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
@@ -44,15 +61,61 @@ export default function SignupPage() {
     setLoading(false)
 
     if (authError) {
-      setError((authError as Error).message || 'Failed to create account. Try again.')
+      setError(getSignupErrorMessage(authError))
+      return
+    }
+
+    setOnboardingData({ name: data.name })
+
+    if (authData?.user && !authData.user.email_confirmed_at) {
+      setSuccess(true)
       return
     }
 
     if (authData?.user) {
       setUserId(authData.user.id)
-      setOnboardingData({ name: data.name })
+      setIsGuest(false)
       router.push('/onboarding')
     }
+  }
+
+  function handleGuest() {
+    const guestId = `guest-${Date.now()}`
+    setUserId(guestId)
+    setIsGuest(true)
+    useUserStore.getState().setProfile({
+      id: guestId,
+      email: '',
+      name: 'Champion',
+      gender: 'male',
+      age: 25,
+      height: 178,
+      weight: 80,
+      target_weight: 74,
+      goal: 'lose_fat',
+      gym_access: 'gym',
+      experience: 'beginner',
+      activity_level: 'moderate',
+      workout_days: ['Monday', 'Wednesday', 'Friday'],
+      units: 'metric',
+      created_at: new Date().toISOString(),
+    })
+    router.push('/onboarding')
+  }
+
+  if (success) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-bg px-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-6">
+          <Mail size={28} className="text-green-400" />
+        </div>
+        <h2 className="text-2xl font-black text-cream mb-3">Check your email</h2>
+        <p className="text-[#888] text-sm leading-relaxed mb-8">
+          We sent a confirmation link to your email address. Click it to activate your account.
+        </p>
+        <Link href="/login" className="text-gold font-bold text-sm">Back to Sign In</Link>
+      </div>
+    )
   }
 
   return (
@@ -60,7 +123,7 @@ export default function SignupPage() {
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(200,169,110,0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(200,169,110,0.07) 0%, transparent 60%)',
         }}
       />
 
@@ -72,7 +135,7 @@ export default function SignupPage() {
           className="flex items-center gap-3 mb-8"
         >
           <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-            <span className="text-2xl">⚔️</span>
+            <SpartanHelmet size={28} color="#C8A96E" />
           </div>
           <span className="text-xl font-black text-gold tracking-tight">SPARTACUS</span>
         </motion.div>
@@ -83,8 +146,8 @@ export default function SignupPage() {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-black text-[#F5F5F5] leading-tight">Begin Your<br />Transformation</h2>
-          <p className="text-[#888] text-sm mt-2">Your legend starts here.</p>
+          <h2 className="text-2xl font-black text-cream leading-tight">Create your account</h2>
+          <p className="text-[#888] text-sm mt-1">Build the body you've always wanted.</p>
         </motion.div>
 
         <motion.form
@@ -97,11 +160,11 @@ export default function SignupPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Full Name</label>
             <div className="relative">
-              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#444]" />
+              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" />
               <input
                 {...register('name')}
                 type="text"
-                placeholder="Your warrior name"
+                placeholder="Your name"
                 className="input-dark w-full h-14 rounded-2xl pl-11 pr-4 text-sm"
               />
             </div>
@@ -111,11 +174,11 @@ export default function SignupPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Email</label>
             <div className="relative">
-              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#444]" />
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" />
               <input
                 {...register('email')}
                 type="email"
-                placeholder="champion@example.com"
+                placeholder="your@email.com"
                 className="input-dark w-full h-14 rounded-2xl pl-11 pr-4 text-sm"
               />
             </div>
@@ -125,7 +188,7 @@ export default function SignupPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Password</label>
             <div className="relative">
-              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#444]" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" />
               <input
                 {...register('password')}
                 type={showPw ? 'text' : 'password'}
@@ -135,7 +198,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444]"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#555]"
               >
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -146,7 +209,7 @@ export default function SignupPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Confirm Password</label>
             <div className="relative">
-              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#444]" />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" />
               <input
                 {...register('confirmPassword')}
                 type="password"
@@ -187,13 +250,29 @@ export default function SignupPage() {
           </Button>
         </motion.form>
 
+        {/* Divider */}
+        <div className="flex items-center gap-4 my-5">
+          <div className="flex-1 h-px bg-white/5" />
+          <span className="text-[#555] text-xs">OR</span>
+          <div className="flex-1 h-px bg-white/5" />
+        </div>
+
+        {/* Guest */}
+        <button
+          onClick={handleGuest}
+          className="w-full h-14 rounded-2xl border border-white/10 flex items-center justify-center gap-3 active:scale-97 transition-transform hover:border-white/20"
+        >
+          <UserCircle2 size={18} className="text-[#888]" />
+          <span className="text-sm font-semibold text-[#888]">Continue as Guest</span>
+        </button>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="text-center text-[#888] text-sm mt-6"
         >
-          Already a warrior?{' '}
+          Already have an account?{' '}
           <Link href="/login" className="text-gold font-bold">
             Sign In
           </Link>

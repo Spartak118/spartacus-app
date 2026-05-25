@@ -7,16 +7,20 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   User, Bell, Scale, Shield, Crown, ChevronRight,
-  LogOut, Lock, Star, Zap, BarChart2, Dumbbell, UtensilsCrossed
+  LogOut, Lock, Star, Zap, BarChart2, Dumbbell,
+  UtensilsCrossed, Flame, Calendar, Target, Sun, Moon
 } from 'lucide-react'
 import { useUserStore } from '@/store/userStore'
 import { signOut } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+import { SpartanHelmet } from '@/components/ui/SpartanHelmet'
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { profile, units, setUnits, notificationsEnabled, setNotificationsEnabled } = useUserStore()
-  const [darkMode, setDarkMode] = useState(true)
+  const {
+    profile, units, setUnits, notificationsEnabled, setNotificationsEnabled,
+    theme, setTheme
+  } = useUserStore()
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
 
   async function handleSignOut() {
@@ -27,11 +31,13 @@ export default function SettingsPage() {
     router.push('/login')
   }
 
+  const plan = useUserStore.getState().plan
+
   return (
     <div className="h-full overflow-y-auto bg-bg">
       <div className="px-4 pt-safe pb-4">
         <div className="pt-4 pb-4">
-          <h1 className="text-2xl font-black text-[#F5F5F5]">Settings</h1>
+          <h1 className="text-2xl font-black text-cream">Settings</h1>
         </div>
 
         <div className="space-y-4">
@@ -43,13 +49,13 @@ export default function SettingsPage() {
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                <span className="text-3xl">⚔️</span>
+                <SpartanHelmet size={36} color="#C8A96E" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-[#F5F5F5]">{profile?.name || 'Champion'}</h2>
-                <p className="text-[#888] text-sm">{profile?.email || 'demo@spartacus.app'}</p>
+                <h2 className="text-lg font-black text-cream">{profile?.name || 'Champion'}</h2>
+                <p className="text-[#888] text-sm">{profile?.email || 'Guest session'}</p>
                 <p className="text-gold text-xs font-semibold capitalize mt-0.5">
-                  {profile?.goal?.replace('_', ' ') || 'Greek God Physique'}
+                  {profile?.goal?.replace('_', ' ') || 'Fitness Journey'}
                 </p>
               </div>
             </div>
@@ -57,7 +63,7 @@ export default function SettingsPage() {
             <button className="w-full flex items-center justify-between py-3 border-t border-white/5">
               <div className="flex items-center gap-3">
                 <User size={16} className="text-gold" />
-                <span className="text-sm font-semibold text-[#F5F5F5]">Edit Profile</span>
+                <span className="text-sm font-semibold text-cream">Edit Profile</span>
               </div>
               <ChevronRight size={16} className="text-[#444]" />
             </button>
@@ -73,14 +79,14 @@ export default function SettingsPage() {
             <p className="text-xs text-[#888] uppercase tracking-widest font-semibold mb-4">Your Plan</p>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Daily Calories', value: `${useUserStore.getState().plan?.dailyCalories || 2200} kcal`, icon: '🔥' },
-                { label: 'Protein Target', value: `${useUserStore.getState().plan?.proteinGrams || 165}g`, icon: '💪' },
-                { label: 'Workout Split', value: useUserStore.getState().plan?.workoutSplit || 'PPL', icon: '📅' },
-                { label: 'Time to Goal', value: `${useUserStore.getState().plan?.estimatedWeeksToGoal || 12} weeks`, icon: '🎯' },
+                { label: 'Daily Calories', value: `${plan?.dailyCalories || 2200} kcal`, icon: <Flame size={14} className="text-gold" /> },
+                { label: 'Protein Target', value: `${plan?.proteinGrams || 165}g`, icon: <Dumbbell size={14} className="text-gold" /> },
+                { label: 'Workout Split', value: plan?.workoutSplit || 'PPL', icon: <Calendar size={14} className="text-gold" /> },
+                { label: 'Time to Goal', value: `${plan?.estimatedWeeksToGoal || 12} wks`, icon: <Target size={14} className="text-gold" /> },
               ].map((item) => (
                 <div key={item.label} className="bg-white/3 rounded-2xl p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm">{item.icon}</span>
+                    {item.icon}
                     <span className="text-[10px] text-[#666] uppercase tracking-wider">{item.label}</span>
                   </div>
                   <p className="text-sm font-black text-gold">{item.value}</p>
@@ -101,18 +107,19 @@ export default function SettingsPage() {
               <SettingToggle
                 icon={<Bell size={16} />}
                 label="Notifications"
-                description="Workout reminders & updates"
+                description="Workout reminders and daily check-ins"
                 checked={notificationsEnabled}
                 onChange={setNotificationsEnabled}
               />
 
+              {/* Units */}
               <div className="py-3 border-b border-white/5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Scale size={16} className="text-gold" />
                     <div>
-                      <p className="text-sm font-semibold text-[#F5F5F5]">Units</p>
-                      <p className="text-xs text-[#666]">Weight & height units</p>
+                      <p className="text-sm font-semibold text-cream">Units</p>
+                      <p className="text-xs text-[#666]">Weight and height measurement</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
@@ -132,13 +139,34 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <SettingToggle
-                icon={<Shield size={16} />}
-                label="Dark Mode"
-                description="Always active for your eyes"
-                checked={darkMode}
-                onChange={setDarkMode}
-              />
+              {/* Theme */}
+              <div className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Shield size={16} className="text-gold" />
+                    <div>
+                      <p className="text-sm font-semibold text-cream">Theme</p>
+                      <p className="text-xs text-[#666]">App appearance</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${theme === 'dark' ? 'bg-gold text-black' : 'text-[#888]'}`}
+                    >
+                      <Moon size={12} />
+                      Dark
+                    </button>
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${theme === 'light' ? 'bg-gold text-black' : 'text-[#888]'}`}
+                    >
+                      <Sun size={12} />
+                      Light
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -168,10 +196,10 @@ export default function SettingsPage() {
             <div className="space-y-2 mb-4">
               {[
                 { icon: <Zap size={14} />, text: 'AI-powered plan adjustments' },
-                { icon: <BarChart2 size={14} />, text: 'Advanced analytics & insights' },
+                { icon: <BarChart2 size={14} />, text: 'Advanced analytics and insights' },
                 { icon: <Dumbbell size={14} />, text: '200+ premium workouts' },
                 { icon: <UtensilsCrossed size={14} />, text: 'Custom meal planning' },
-                { icon: <Star size={14} />, text: 'Priority 1:1 coaching access' },
+                { icon: <Star size={14} />, text: 'Priority coaching access' },
               ].map((feat, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="text-gold/60">{feat.icon}</div>
@@ -181,9 +209,9 @@ export default function SettingsPage() {
             </div>
 
             <div className="mb-3">
-              <p className="text-[#888] text-xs mb-1">Current Plan:</p>
+              <p className="text-[#888] text-xs mb-1">Free plan includes:</p>
               <div className="space-y-1">
-                {['Basic workout tracking', 'Standard meal logging', 'Limited progress photos'].map((f, i) => (
+                {['Basic workout tracking', 'Standard meal logging', 'Progress photos (limited)'].map((f, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Lock size={10} className="text-[#444]" />
                     <p className="text-[#444] text-xs">{f}</p>
@@ -210,7 +238,7 @@ export default function SettingsPage() {
                 key={item}
                 className="w-full flex items-center justify-between py-3 border-b border-white/5 last:border-0 active:scale-99 transition-transform"
               >
-                <span className={`text-sm font-medium ${item === 'Delete Account' ? 'text-[#ff4444]' : 'text-[#888]'}`}>{item}</span>
+                <span className={`text-sm font-medium ${item === 'Delete Account' ? 'text-red-400' : 'text-[#888]'}`}>{item}</span>
                 <ChevronRight size={14} className="text-[#333]" />
               </button>
             ))}
@@ -236,7 +264,7 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="glass-card rounded-2xl p-4"
               >
-                <p className="text-sm text-[#F5F5F5] font-semibold text-center mb-3">Sign out of Spartacus?</p>
+                <p className="text-sm text-cream font-semibold text-center mb-3">Sign out of Spartacus?</p>
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="ghost" onClick={() => setShowSignOutConfirm(false)}>Cancel</Button>
                   <Button variant="danger" onClick={handleSignOut}>Sign Out</Button>
@@ -245,7 +273,7 @@ export default function SettingsPage() {
             )}
           </motion.div>
 
-          <p className="text-center text-[#333] text-xs pb-4">SPARTACUS v1.0.0 · Become Legendary</p>
+          <p className="text-center text-[#333] text-xs pb-4">SPARTACUS v1.0.0</p>
         </div>
       </div>
     </div>
@@ -266,7 +294,7 @@ function SettingToggle({
       <div className="flex items-center gap-3">
         <div className="text-gold">{icon}</div>
         <div>
-          <p className="text-sm font-semibold text-[#F5F5F5]">{label}</p>
+          <p className="text-sm font-semibold text-cream">{label}</p>
           <p className="text-xs text-[#666]">{description}</p>
         </div>
       </div>

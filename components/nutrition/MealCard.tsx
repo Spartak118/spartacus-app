@@ -10,6 +10,26 @@ interface MealCardProps {
   delay?: number
 }
 
+function categoryColor(cat?: string): string {
+  const map: Record<string, string> = {
+    'High Protein': 'rgba(168,217,160,0.12)',
+    Cutting: 'rgba(217,160,160,0.12)',
+    Bulking: 'rgba(200,169,110,0.12)',
+    Quick: 'rgba(160,184,217,0.12)',
+  }
+  return map[cat || ''] || 'rgba(255,255,255,0.05)'
+}
+
+function categoryTextColor(cat?: string): string {
+  const map: Record<string, string> = {
+    'High Protein': '#A8D9A0',
+    Cutting: '#D9A0A0',
+    Bulking: '#C8A96E',
+    Quick: '#A0B8D9',
+  }
+  return map[cat || ''] || '#888'
+}
+
 export function MealCard({ meal, onAdd, delay = 0 }: MealCardProps) {
   return (
     <motion.div
@@ -18,8 +38,16 @@ export function MealCard({ meal, onAdd, delay = 0 }: MealCardProps) {
       transition={{ duration: 0.3, delay }}
       className="glass-card rounded-2xl p-4 flex items-center gap-4"
     >
-      <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-2xl flex-shrink-0">
-        {meal.emoji || '🍽️'}
+      <div
+        className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{
+          background: categoryColor(meal.category),
+          border: `1px solid ${categoryColor(meal.category).replace('0.12', '0.25')}`,
+        }}
+      >
+        <span className="text-sm font-black" style={{ color: categoryTextColor(meal.category) }}>
+          {meal.name.charAt(0).toUpperCase()}
+        </span>
       </div>
 
       <div className="flex-1 min-w-0">

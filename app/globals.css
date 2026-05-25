@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+[data-theme="dark"] {
   --bg: #0A0A0A;
   --surface: #111111;
   --surface2: #1A1A1A;
@@ -11,10 +12,37 @@
   --gold-light: #E8C98E;
   --gold-dark: #A88950;
   --white: #F5F5F5;
+  --cream: #F5F5F5;
   --gray: #888888;
   --red: #B22234;
   --glow: rgba(200, 169, 110, 0.15);
   --glow-strong: rgba(200, 169, 110, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(255, 255, 255, 0.08);
+  --nav-bg: rgba(17, 17, 17, 0.85);
+}
+
+[data-theme="light"] {
+  --bg: #F2F0EB;
+  --surface: #FFFFFF;
+  --surface2: #F8F6F2;
+  --border: #E0DDD6;
+  --gold: #A8832E;
+  --gold-light: #C8A96E;
+  --gold-dark: #886820;
+  --white: #1A1A1A;
+  --cream: #1A1A1A;
+  --gray: #6B6B6B;
+  --red: #CC2233;
+  --glow: rgba(168, 131, 46, 0.12);
+  --glow-strong: rgba(168, 131, 46, 0.25);
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.07);
+  --input-bg: rgba(0, 0, 0, 0.04);
+  --input-border: rgba(0, 0, 0, 0.10);
+  --nav-bg: rgba(248, 246, 242, 0.92);
 }
 
 * {
@@ -61,8 +89,8 @@ main {
 
 /* Glass card */
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -106,8 +134,8 @@ main {
 
 /* Input style */
 .input-dark {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   color: var(--white);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -235,10 +263,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Bottom nav blur */
 .bottom-nav {
-  background: rgba(17, 17, 17, 0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--glass-border);
 }
 
 /* Achievement badge glow */
@@ -266,14 +294,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Selection tap card */
 .select-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .select-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--input-bg);
   border-color: rgba(200, 169, 110, 0.2);
 }
 
@@ -307,7 +335,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 51px;
   height: 31px;
   border-radius: 15.5px;
-  background: #3a3a3c;
+  background: var(--border);
   position: relative;
   cursor: pointer;
   transition: background 0.3s ease;

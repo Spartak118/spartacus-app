@@ -1,16 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { TrendingDown, Dumbbell, Sparkles, Shield, Activity, Rocket } from 'lucide-react'
 import type { Goal } from '@/types'
 import { cn } from '@/lib/utils'
 
-const GOALS: { id: Goal; emoji: string; label: string; description: string }[] = [
-  { id: 'lose_fat', emoji: '🔥', label: 'Lose Fat', description: 'Burn body fat & get lean' },
-  { id: 'build_muscle', emoji: '💪', label: 'Build Muscle', description: 'Add mass & strength' },
-  { id: 'aesthetic', emoji: '⚡', label: 'Aesthetic Physique', description: 'Lean & defined look' },
-  { id: 'greek_god', emoji: '🏛️', label: 'Greek God Physique', description: 'The ultimate aesthetic' },
-  { id: 'athletic', emoji: '🎯', label: 'Athletic Body', description: 'Performance & function' },
-  { id: 'beginner', emoji: '✨', label: 'Beginner Transformation', description: 'Start your journey' },
+const GOALS: { id: Goal; icon: React.ReactNode; label: string; description: string }[] = [
+  { id: 'lose_fat', icon: <TrendingDown size={20} />, label: 'Lose Fat', description: 'Reduce body fat while preserving muscle' },
+  { id: 'build_muscle', icon: <Dumbbell size={20} />, label: 'Build Muscle', description: 'Add mass and increase strength' },
+  { id: 'aesthetic', icon: <Sparkles size={20} />, label: 'Aesthetic Physique', description: 'Lean, defined, balanced look' },
+  { id: 'greek_god', icon: <Shield size={20} />, label: 'Greek God Physique', description: 'Maximum muscle with minimal fat' },
+  { id: 'athletic', icon: <Activity size={20} />, label: 'Athletic Body', description: 'Performance, power, and function' },
+  { id: 'beginner', icon: <Rocket size={20} />, label: 'First Transformation', description: 'Build the habit and foundation' },
 ]
 
 interface GoalSelectorProps {
@@ -30,23 +31,27 @@ export function GoalSelector({ selected, onSelect }: GoalSelectorProps) {
           whileTap={{ scale: 0.97 }}
           onClick={() => onSelect(goal.id)}
           className={cn(
-            'select-card rounded-2xl p-4 text-left flex flex-col gap-2',
+            'select-card rounded-2xl p-4 text-left flex flex-col gap-3',
             selected === goal.id && 'selected',
           )}
         >
-          <span className="text-3xl">{goal.emoji}</span>
+          <div className={cn(
+            'w-9 h-9 rounded-xl flex items-center justify-center',
+            selected === goal.id
+              ? 'bg-gold/20 text-gold'
+              : 'bg-white/5 text-[#666]'
+          )}>
+            {goal.icon}
+          </div>
           <div>
             <p className={cn(
               'text-sm font-bold',
-              selected === goal.id ? 'text-gold' : 'text-[#F5F5F5]'
+              selected === goal.id ? 'text-gold' : 'text-cream'
             )}>
               {goal.label}
             </p>
             <p className="text-xs text-[#666] mt-0.5 leading-relaxed">{goal.description}</p>
           </div>
-          {selected === goal.id && (
-            <div className="w-full h-0.5 bg-gold rounded-full" />
-          )}
         </motion.button>
       ))}
     </div>

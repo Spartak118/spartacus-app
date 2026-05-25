@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Droplets, Weight, UtensilsCrossed, Bell } from 'lucide-react'
+import { Plus, Droplets, Weight, UtensilsCrossed, Bell, Flame, Dumbbell, Footprints } from 'lucide-react'
 import { useUserStore } from '@/store/userStore'
 import { useNutrition } from '@/hooks/useNutrition'
 import { useStreak } from '@/hooks/useStreak'
@@ -14,23 +14,19 @@ import { TodayWorkout } from '@/components/dashboard/TodayWorkout'
 import { MotivationalQuote } from '@/components/dashboard/MotivationalQuote'
 import { ScoreCard } from '@/components/dashboard/ScoreCard'
 import { ProgressRing } from '@/components/ui/ProgressRing'
-import { Button } from '@/components/ui/Button'
 import { WORKOUTS, SPLIT_SCHEDULES } from '@/lib/workouts'
-import { getGreeting, getDayOfWeek, getTodayString } from '@/lib/utils'
+import { getGreeting, getDayOfWeek } from '@/lib/utils'
 import { calculateDisciplineScore, calculateAestheticScore } from '@/lib/transformationPlan'
 
 export default function DashboardPage() {
-  const { profile, plan, nutritionToday, addWater, addMeal } = useUserStore()
+  const { profile, plan, workoutsThisWeek, nutritionDaysHit, addWater, addMeal } = useUserStore()
   const { today, goals } = useNutrition()
   const { currentStreak, longestStreak, markDayActive } = useStreak()
   const [showQuickLog, setShowQuickLog] = useState(false)
-  const [weightInput, setWeightInput] = useState('')
   const [activeModal, setActiveModal] = useState<null | 'meal' | 'water' | 'weight'>(null)
 
   const dayOfWeek = getDayOfWeek()
-  const todayStr = getTodayString()
 
-  // Get today's workout from split
   const split = plan?.workoutSplit || 'Full Body'
   const schedule = SPLIT_SCHEDULES[split] || {}
   const todayWorkoutId = schedule[dayOfWeek]
@@ -44,15 +40,15 @@ export default function DashboardPage() {
   ))
 
   const disciplineScore = calculateDisciplineScore({
-    workoutsThisWeek: 3,
-    targetWorkouts: plan?.workoutDays.length || 4,
-    nutritionDaysHit: 4,
+    workoutsThisWeek,
+    targetWorkouts: plan?.workoutDays?.length || 4,
+    nutritionDaysHit,
     currentStreak,
-    sleepGoalHit: true,
+    sleepGoalHit: false,
   })
 
   const aestheticScore = calculateAestheticScore({
-    weeklyProgress: 2,
+    weeklyProgress: 0,
     goalType: profile?.goal || 'aesthetic',
     daysInProgram,
   })
@@ -80,10 +76,9 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-bg">
-      {/* Header gradient */}
       <div
         className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] h-32 pointer-events-none z-0"
-        style={{ background: 'linear-gradient(to bottom, rgba(200,169,110,0.08) 0%, transparent 100%)' }}
+        style={{ background: 'linear-gradient(to bottom, rgba(200,169,110,0.06) 0%, transparent 100%)' }}
       />
 
       <div className="relative z-10 px-4 pt-safe">
@@ -96,8 +91,8 @@ export default function DashboardPage() {
         >
           <div>
             <p className="text-[#888] text-sm font-medium">{getGreeting()},</p>
-            <h1 className="text-2xl font-black text-[#F5F5F5] leading-tight">
-              {profile?.name || 'Champion'} 👋
+            <h1 className="text-2xl font-black text-cream leading-tight">
+              {profile?.name || 'Champion'}
             </h1>
             <p className="text-[#555] text-xs mt-0.5">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
@@ -134,7 +129,7 @@ export default function DashboardPage() {
               goal={goals.calories}
               unit="kcal"
               color="#C8A96E"
-              emoji="🔥"
+              icon={<Flame size={14} className="text-[#C8A96E]" />}
             />
             <MacroStatCard
               label="Protein"
@@ -142,7 +137,7 @@ export default function DashboardPage() {
               goal={goals.protein}
               unit="g"
               color="#A8D9A0"
-              emoji="💪"
+              icon={<Dumbbell size={14} className="text-[#A8D9A0]" />}
             />
             <MacroStatCard
               label="Water"
@@ -150,15 +145,15 @@ export default function DashboardPage() {
               goal={goals.water}
               unit="glasses"
               color="#4A90D9"
-              emoji="💧"
+              icon={<Droplets size={14} className="text-[#4A90D9]" />}
             />
             <MacroStatCard
-              label="Steps"
-              value={7482}
-              goal={10000}
-              unit="steps"
+              label="Workouts"
+              value={workoutsThisWeek}
+              goal={plan?.workoutDays?.length || 4}
+              unit="this week"
               color="#D9A0C8"
-              emoji="👟"
+              icon={<Footprints size={14} className="text-[#D9A0C8]" />}
             />
           </motion.div>
 
@@ -192,7 +187,7 @@ export default function DashboardPage() {
               transition={{ delay: 0.6 }}
               className="glass-card rounded-3xl p-5"
             >
-              <h3 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-widest mb-4">Daily Habits</h3>
+              <h3 className="text-sm font-bold text-cream uppercase tracking-widest mb-4">Daily Habits</h3>
               <div className="space-y-3">
                 {plan.dailyHabits.slice(0, 5).map((habit, i) => (
                   <div key={i} className="flex items-start gap-3">
@@ -219,7 +214,11 @@ export default function DashboardPage() {
           onClick={() => setShowQuickLog(!showQuickLog)}
           className="w-14 h-14 rounded-2xl btn-gold flex items-center justify-center shadow-gold-lg"
         >
-          <Plus size={24} className="text-black" style={{ transform: showQuickLog ? 'rotate(45deg)' : 'none', transition: 'transform 0.3s' }} />
+          <Plus
+            size={24}
+            className="text-black"
+            style={{ transform: showQuickLog ? 'rotate(45deg)' : 'none', transition: 'transform 0.3s' }}
+          />
         </button>
       </motion.div>
 
@@ -247,22 +246,25 @@ export default function DashboardPage() {
                 className="flex items-center gap-3 glass-card border-gold-glow rounded-2xl px-4 py-3 active:scale-95 transition-transform"
               >
                 <span className="text-gold">{item.icon}</span>
-                <span className="text-sm font-semibold text-[#F5F5F5]">{item.label}</span>
+                <span className="text-sm font-semibold text-cream">{item.label}</span>
               </motion.button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* suppress unused warning */}
+      <span className="hidden">{activeModal}</span>
     </div>
   )
 }
 
 function MacroStatCard({
-  label, value, goal, unit, color, emoji
+  label, value, goal, unit, color, icon
 }: {
-  label: string, value: number, goal: number, unit: string, color: string, emoji: string
+  label: string, value: number, goal: number, unit: string, color: string, icon: React.ReactNode
 }) {
-  const pct = Math.min(100, Math.round((value / goal) * 100))
+  const pct = Math.min(100, goal > 0 ? Math.round((value / goal) * 100) : 0)
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
@@ -272,7 +274,7 @@ function MacroStatCard({
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-[#888] font-semibold">{label}</span>
-        <span className="text-base">{emoji}</span>
+        {icon}
       </div>
       <div className="flex items-baseline gap-1 mb-2">
         <span className="text-xl font-black tabular-nums" style={{ color }}>{value.toLocaleString()}</span>

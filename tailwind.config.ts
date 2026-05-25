@@ -9,18 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#0A0A0A',
-        surface: '#111111',
-        surface2: '#1A1A1A',
-        border: '#2A2A2A',
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        surface2: 'var(--surface2)',
+        border: 'var(--border)',
         gold: {
-          DEFAULT: '#C8A96E',
-          light: '#E8C98E',
-          dark: '#A88950',
+          DEFAULT: 'var(--gold)',
+          light: 'var(--gold-light)',
+          dark: 'var(--gold-dark)',
         },
-        cream: '#F5F5F5',
-        muted: '#888888',
-        'red-accent': '#B22234',
+        cream: 'var(--cream)',
+        muted: 'var(--gray)',
+        'red-accent': 'var(--red)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

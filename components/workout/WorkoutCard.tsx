@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Clock, Zap, Star, ChevronRight } from 'lucide-react'
+import { Clock, Zap, Star, ChevronRight, Dumbbell, ArrowDownUp, Triangle, CircleDot, Layers, Activity, Cpu, MoveRight, Heart } from 'lucide-react'
 import type { Workout } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -63,7 +63,7 @@ export function WorkoutCard({ workout, onClick, delay = 0, isToday = false }: Wo
           className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}
         >
-          <span className="text-xl">{categoryEmoji(workout.category)}</span>
+          <CategoryIcon category={workout.category} color={color} />
         </div>
       </div>
 
@@ -99,11 +99,20 @@ export function WorkoutCard({ workout, onClick, delay = 0, isToday = false }: Wo
   )
 }
 
-function categoryEmoji(category: string): string {
-  const map: Record<string, string> = {
-    Push: '💪', Pull: '🔙', Legs: '🦵', Shoulders: '🏛️',
-    Back: '🔥', Core: '⚡', 'Full Body': '⚔️', Cardio: '🏃',
-    Arms: '💪', Recovery: '🧘', Power: '⚡', Default: '🏋️',
+function CategoryIcon({ category, color }: { category: string; color: string }) {
+  const iconProps = { size: 20, color }
+  const map: Record<string, React.ReactNode> = {
+    Push: <Dumbbell {...iconProps} />,
+    Pull: <ArrowDownUp {...iconProps} />,
+    Legs: <Triangle {...iconProps} />,
+    Shoulders: <CircleDot {...iconProps} />,
+    Back: <Layers {...iconProps} />,
+    Core: <Cpu {...iconProps} />,
+    'Full Body': <Dumbbell {...iconProps} />,
+    Cardio: <Activity {...iconProps} />,
+    Arms: <MoveRight {...iconProps} />,
+    Recovery: <Heart {...iconProps} />,
+    Power: <Zap {...iconProps} />,
   }
-  return map[category] || map.Default
+  return <>{map[category] || <Dumbbell {...iconProps} />}</>
 }

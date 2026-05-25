@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useUserStore } from '@/store/userStore'
+import { SpartanHelmet } from '@/components/ui/SpartanHelmet'
 
 export default function SplashScreen() {
   const router = useRouter()
@@ -54,7 +55,7 @@ export default function SplashScreen() {
           className="w-24 h-24 rounded-3xl border border-gold/30 bg-gold/10 flex items-center justify-center"
           style={{ boxShadow: '0 0 60px rgba(200,169,110,0.25)' }}
         >
-          <span className="text-5xl">⚔️</span>
+          <SpartanHelmet size={52} color="#C8A96E" />
         </motion.div>
 
         {/* Title */}

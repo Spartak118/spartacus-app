@@ -17,11 +17,10 @@ interface UserInput {
   body_fat?: number
 }
 
+// Mifflin-St Jeor equation (more accurate than Harris-Benedict)
 function calculateBMR(gender: Gender, weight: number, height: number, age: number): number {
-  if (gender === 'male') {
-    return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
-  }
-  return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
+  const base = 10 * weight + 6.25 * height - 5 * age
+  return gender === 'male' ? base + 5 : base - 161
 }
 
 function getActivityMultiplier(level: ActivityLevel): number {
@@ -37,15 +36,16 @@ function getActivityMultiplier(level: ActivityLevel): number {
 function getCalorieModifier(goal: Goal): number {
   const modifiers: Record<Goal, number> = {
     lose_fat: 0.8,
-    build_muscle: 1.15,
+    build_muscle: 1.12,
     aesthetic: 0.9,
     greek_god: 1.05,
     athletic: 1.0,
-    beginner: 1.0,
+    beginner: 0.95,
   }
   return modifiers[goal]
 }
 
+// 1.6–2.2g protein per kg of bodyweight depending on goal
 function getProteinMultiplier(goal: Goal): number {
   const multipliers: Record<Goal, number> = {
     lose_fat: 2.2,
@@ -59,20 +59,26 @@ function getProteinMultiplier(goal: Goal): number {
 }
 
 function getWorkoutSplit(experience: Experience, gym_access: GymAccess, daysCount: number): WorkoutSplit {
-  if (gym_access === 'home' || daysCount <= 3) return 'Full Body'
+  // No gym access always means full body
+  if (gym_access === 'home') return 'Full Body'
+  // Beginners need full-body frequency for motor pattern development
   if (experience === 'beginner') return 'Full Body'
-  if (experience === 'some') return 'Upper/Lower'
-  if (daysCount >= 6) return 'PPL'
+  // Low days → full body regardless of experience
+  if (daysCount <= 3) return 'Full Body'
+  // Some experience or intermediate with moderate days → upper/lower
+  if (experience === 'some' || (experience === 'intermediate' && daysCount <= 4)) return 'Upper/Lower'
+  // Intermediate/advanced with 5+ days → PPL
+  if (daysCount >= 5) return 'PPL'
   return 'Upper/Lower'
 }
 
 function getCardioMinutes(goal: Goal, activity_level: ActivityLevel): number {
   const base: Record<Goal, number> = {
-    lose_fat: 40,
+    lose_fat: 35,
     build_muscle: 15,
     aesthetic: 25,
     greek_god: 20,
-    athletic: 35,
+    athletic: 30,
     beginner: 20,
   }
   const activityBonus: Record<ActivityLevel, number> = {
@@ -99,68 +105,75 @@ function getWeeklyWeightChange(goal: Goal): number {
 function getEstimatedWeeks(currentWeight: number, targetWeight: number, weeklyChange: number): number {
   const diff = Math.abs(targetWeight - currentWeight)
   if (diff < 0.5 || weeklyChange === 0) return 12
-  return Math.round(diff / Math.abs(weeklyChange))
+  return Math.min(52, Math.max(4, Math.round(diff / Math.abs(weeklyChange))))
 }
 
-function getDailyHabits(goal: Goal): string[] {
+function getDailyHabits(goal: Goal, experience: Experience): string[] {
   const common = [
-    'Drink water within 5 minutes of waking',
-    'Get morning sunlight exposure',
-    'Track all meals before eating',
-    '10,000+ steps daily',
-    'No alcohol during transformation',
+    'Drink 500ml of water within 10 minutes of waking',
+    'Get 10 minutes of natural light in the morning',
+    'Log every meal before eating it',
+    'Walk at least 7,000 steps per day',
+    'Be in bed 8 hours before your alarm',
   ]
 
   const goalSpecific: Record<Goal, string[]> = {
     lose_fat: [
-      'Eat protein first at every meal',
-      '16:8 intermittent fasting window',
-      'Cold shower to boost metabolism',
-      'Evening walk after dinner',
+      'Start each meal with protein and vegetables',
+      'Stop eating 3 hours before bed',
+      'Use a 20-minute walk after your largest meal to blunt glucose spikes',
+      'Weigh yourself every morning after using the bathroom',
     ],
     build_muscle: [
-      'Eat within 30 min of waking',
-      'Post-workout protein shake within 30 min',
-      'Eat every 3-4 hours',
-      'Prioritize compound lifts',
+      'Eat a protein-rich meal within 90 minutes of finishing training',
+      'Track your compound lifts — aim for progressive overload weekly',
+      'Eat enough — undereating kills muscle growth',
+      'Prioritize sleep: muscle is built at rest, not in the gym',
     ],
     aesthetic: [
-      'Posture check every hour',
-      'Visualize your physique daily',
-      'Mirror check your progress weekly',
-      'Focus on mind-muscle connection',
+      'Train with intent — quality reps over heavy weight',
+      'Track measurements weekly, not just bodyweight',
+      'Focus on the mind-muscle connection on every set',
+      'Take progress photos every two weeks in the same light',
     ],
     greek_god: [
-      'Shoulder width exercises daily',
-      'Waist vacuum exercises',
-      'Proportional training focus',
-      'Track measurements weekly',
+      'Prioritize lateral deltoid and lat width work every session',
+      'Do 10 minutes of core and posture work daily',
+      'Track your shoulder-to-waist ratio monthly',
+      'Control body fat: aim for 10–13% for the Greek God look',
     ],
     athletic: [
-      'Dynamic warm-up before every session',
-      'Sport-specific practice daily',
-      'Mobility work every morning',
-      'Sleep tracking nightly',
+      'Warm up for 10 minutes with dynamic movement before every session',
+      'Work on mobility for 15 minutes on rest days',
+      'Track sport performance metrics, not just aesthetics',
+      'Eat enough carbohydrates to fuel training intensity',
     ],
     beginner: [
-      'Learn one new exercise form each week',
-      'Celebrate every small win',
-      'Take weekly progress photos',
-      'Rest day is still a health day',
+      'Master the form before adding weight — film yourself',
+      'Consistency beats intensity: showing up matters more than volume',
+      'Rest days are not optional — recovery is where you grow',
+      'Set a specific time for training and treat it like an appointment',
     ],
   }
 
-  return [...common, ...goalSpecific[goal]].slice(0, 8)
+  const experienceHint: Record<Experience, string> = {
+    beginner: 'Follow the plan for 8 weeks before changing anything',
+    some: 'Track your lifts — aim to add weight or reps each week',
+    intermediate: 'Periodize your training — plan deload weeks every 6–8 weeks',
+    advanced: 'Monitor recovery: HRV, sleep quality, and mood are signals',
+  }
+
+  return [...common, ...goalSpecific[goal], experienceHint[experience]].slice(0, 8)
 }
 
 function getAestheticFocus(goal: Goal): string[] {
   const focuses: Record<Goal, string[]> = {
-    lose_fat: ['Core definition', 'Vascular forearms', 'Face definition', 'Jawline sharpness'],
-    build_muscle: ['Chest thickness', 'Back width', 'Arm circumference', 'Quad sweep'],
-    aesthetic: ['V-taper', 'Shoulder caps', 'Visible abs', 'Defined arms'],
-    greek_god: ['Boulder shoulders', 'V-taper back', 'Chest striations', 'Cinched waist', 'Diamond calves'],
-    athletic: ['Functional strength', 'Explosive power', 'Endurance', 'Agility'],
-    beginner: ['Full body toning', 'Posture improvement', 'Confidence building', 'Habit formation'],
+    lose_fat: ['Core definition', 'Face definition', 'Vascular forearms', 'Separation between muscle groups'],
+    build_muscle: ['Chest thickness', 'Back width and thickness', 'Arm circumference', 'Quad sweep'],
+    aesthetic: ['V-taper (shoulder-to-waist ratio)', 'Shoulder roundness', 'Visible abs', 'Arm definition'],
+    greek_god: ['Boulder shoulders', 'Wide lats', 'Chest striations', 'Narrow waist', 'Diamond calves'],
+    athletic: ['Functional strength', 'Explosive power output', 'Cardiovascular endurance', 'Movement quality'],
+    beginner: ['Posture improvement', 'Full-body muscle tone', 'Confidence in movement', 'Building the base'],
   }
   return focuses[goal]
 }
@@ -168,12 +181,12 @@ function getAestheticFocus(goal: Goal): string[] {
 function getSleepHours(goal: Goal): number {
   if (goal === 'build_muscle' || goal === 'greek_god') return 8.5
   if (goal === 'athletic') return 9
-  return 7.5
+  return 8
 }
 
 export function generatePlan(userData: UserInput): TransformationPlan {
   const bmr = calculateBMR(userData.gender, userData.weight, userData.height, userData.age)
-  const tdee = bmr * getActivityMultiplier(userData.activity_level)
+  const tdee = Math.round(bmr * getActivityMultiplier(userData.activity_level))
   const dailyCalories = Math.round(tdee * getCalorieModifier(userData.goal))
 
   const proteinGrams = Math.round(userData.weight * getProteinMultiplier(userData.goal))
@@ -198,7 +211,7 @@ export function generatePlan(userData: UserInput): TransformationPlan {
 
   const assignedDays = userData.workout_days.length > 0
     ? userData.workout_days
-    : ['Monday', 'Tuesday', 'Thursday', 'Friday']
+    : ['Monday', 'Wednesday', 'Friday']
 
   return {
     dailyCalories,
@@ -212,7 +225,7 @@ export function generatePlan(userData: UserInput): TransformationPlan {
     cardioMinutes,
     estimatedWeeksToGoal,
     weeklyWeightChange,
-    dailyHabits: getDailyHabits(userData.goal),
+    dailyHabits: getDailyHabits(userData.goal, userData.experience),
     aestheticFocus: getAestheticFocus(userData.goal),
   }
 }
@@ -224,7 +237,8 @@ export function calculateDisciplineScore(params: {
   currentStreak: number
   sleepGoalHit: boolean
 }): number {
-  const workoutScore = Math.min(40, (params.workoutsThisWeek / params.targetWorkouts) * 40)
+  if (params.workoutsThisWeek === 0 && params.nutritionDaysHit === 0 && params.currentStreak === 0) return 0
+  const workoutScore = Math.min(40, (params.workoutsThisWeek / Math.max(1, params.targetWorkouts)) * 40)
   const nutritionScore = Math.min(30, (params.nutritionDaysHit / 7) * 30)
   const streakScore = Math.min(20, (params.currentStreak / 30) * 20)
   const sleepScore = params.sleepGoalHit ? 10 : 0
@@ -236,8 +250,8 @@ export function calculateAestheticScore(params: {
   goalType: Goal
   daysInProgram: number
 }): number {
+  if (params.daysInProgram <= 1) return 0
   const progressScore = Math.min(60, params.weeklyProgress * 10)
   const timeScore = Math.min(30, (params.daysInProgram / 90) * 30)
-  const baseScore = 10
-  return Math.round(baseScore + progressScore + timeScore)
+  return Math.round(progressScore + timeScore)
 }

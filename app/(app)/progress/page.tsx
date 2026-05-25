@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { Plus, TrendingDown, TrendingUp, Check } from 'lucide-react'
 import { useUserStore } from '@/store/userStore'
 import { WeightChart } from '@/components/progress/WeightChart'
 import { PhotoUpload } from '@/components/progress/PhotoUpload'
@@ -16,16 +16,7 @@ import type { WeightEntry, Measurements } from '@/types'
 
 type Tab = 'overview' | 'photos' | 'measurements' | 'achievements'
 
-const SAMPLE_WEIGHTS: WeightEntry[] = Array.from({ length: 14 }, (_, i) => {
-  const date = new Date()
-  date.setDate(date.getDate() - (13 - i))
-  return {
-    id: `w${i}`,
-    user_id: 'demo',
-    date: date.toISOString().split('T')[0],
-    weight: 82 - (i * 0.15) + (Math.random() * 0.4 - 0.2),
-  }
-})
+const SAMPLE_WEIGHTS: WeightEntry[] = []
 
 const MEASUREMENT_FIELDS: { key: keyof Measurements; label: string; unit: string }[] = [
   { key: 'chest', label: 'Chest', unit: 'cm' },
@@ -39,7 +30,7 @@ const MEASUREMENT_FIELDS: { key: keyof Measurements; label: string; unit: string
 
 export default function ProgressPage() {
   const [tab, setTab] = useState<Tab>('overview')
-  const { profile, plan } = useUserStore()
+  const { profile, plan, workoutsThisWeek, nutritionDaysHit } = useUserStore()
   const [measurements, setMeasurements] = useState<Measurements>({})
   const [showWeightInput, setShowWeightInput] = useState(false)
   const [weightInput, setWeightInput] = useState('')
@@ -160,19 +151,15 @@ export default function ProgressPage() {
 
               {/* This week summary */}
               <div className="glass-card rounded-3xl p-5">
-                <h3 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-widest mb-4">This Week</h3>
-                <div className="grid grid-cols-3 gap-4">
+                <h3 className="text-sm font-bold text-cream uppercase tracking-widest mb-4">This Week</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <p className="text-2xl font-black text-gold">3</p>
-                    <p className="text-[10px] text-[#666]">Workouts</p>
+                    <p className="text-2xl font-black text-gold tabular-nums">{workoutsThisWeek}</p>
+                    <p className="text-[10px] text-[#666]">Workouts logged</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-black text-[#A8D9A0]">4</p>
-                    <p className="text-[10px] text-[#666]">Nutrition days</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-black text-[#4A90D9]">7.5h</p>
-                    <p className="text-[10px] text-[#666]">Avg sleep</p>
+                    <p className="text-2xl font-black text-[#A8D9A0] tabular-nums">{nutritionDaysHit}</p>
+                    <p className="text-[10px] text-[#666]">Nutrition days hit</p>
                   </div>
                 </div>
               </div>
@@ -185,7 +172,7 @@ export default function ProgressPage() {
                     <div key={day} className="flex flex-col items-center gap-1">
                       <span className="text-[10px] text-[#555] font-semibold">{day}</span>
                       <div className="w-8 h-8 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center">
-                        <span className="text-[10px] text-gold">✓</span>
+                        <Check size={12} className="text-gold" />
                       </div>
                       <span className="text-[10px] text-[#555]">{short}</span>
                     </div>

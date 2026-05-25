@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Moon, Sun, Star, Battery } from 'lucide-react'
+import { Moon, Sun, Star, Battery, Monitor, Thermometer, EyeOff, Clock, Pill } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine
@@ -80,9 +80,9 @@ export default function SleepPage() {
           </div>
 
           <p className="text-[#888] text-xs mt-2">
-            {recoveryScore >= 80 ? '✨ Excellent recovery. Ready to perform.' :
-              recoveryScore >= 60 ? '💪 Good recovery. Push hard today.' :
-                '😴 Poor recovery. Consider active rest.'}
+            {recoveryScore >= 80 ? 'Excellent recovery. Ready to perform.' :
+              recoveryScore >= 60 ? 'Good recovery. Train hard today.' :
+                'Poor recovery. Consider active rest or a lighter session.'}
           </p>
         </motion.div>
 
@@ -125,7 +125,7 @@ export default function SleepPage() {
           <div className="text-center mb-5 py-3 bg-white/3 rounded-2xl">
             <p className="text-xs text-[#888] mb-1">Duration</p>
             <p className="text-3xl font-black text-gold tabular-nums">{duration.toFixed(1)}h</p>
-            <p className="text-xs text-[#555] mt-1">{duration >= 7 ? '✓ Meets goal' : '⚠ Below 7h target'}</p>
+            <p className="text-xs text-[#555] mt-1">{duration >= 7 ? 'Meets target' : 'Below 7h target'}</p>
           </div>
 
           {/* Quality rating */}
@@ -157,7 +157,7 @@ export default function SleepPage() {
             fullWidth
             onClick={handleSave}
           >
-            {saved ? '✓ Saved!' : 'Save Sleep Log'}
+            {saved ? 'Saved' : 'Save Sleep Log'}
           </Button>
         </motion.div>
 
@@ -223,14 +223,14 @@ export default function SleepPage() {
           <h3 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-widest mb-4">Sleep Optimization</h3>
           <div className="space-y-3">
             {[
-              { tip: 'No screens 1 hour before bed', icon: '📵' },
-              { tip: 'Keep room temperature at 18-20°C', icon: '❄️' },
-              { tip: 'Blackout curtains or sleep mask', icon: '🌙' },
-              { tip: 'Consistent bedtime within 30 min', icon: '⏰' },
-              { tip: 'Magnesium glycinate before bed', icon: '💊' },
+              { tip: 'No screens 1 hour before bed', icon: <Monitor size={16} className="text-[#4A90D9]" /> },
+              { tip: 'Keep room temperature at 18–20°C', icon: <Thermometer size={16} className="text-[#A0D9D9]" /> },
+              { tip: 'Blackout curtains or sleep mask', icon: <EyeOff size={16} className="text-[#888]" /> },
+              { tip: 'Consistent bedtime within 30 minutes', icon: <Clock size={16} className="text-gold" /> },
+              { tip: 'Magnesium glycinate before bed helps sleep quality', icon: <Pill size={16} className="text-[#A8D9A0]" /> },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-lg">{item.icon}</span>
+                <div className="flex-shrink-0">{item.icon}</div>
                 <p className="text-sm text-[#888] leading-relaxed">{item.tip}</p>
               </div>
             ))}
